@@ -7,6 +7,7 @@ import (
 	"github.com/99designs/httpsignatures-go"
 	"io/ioutil"
 	"net/http"
+	"time"
 )
 
 type oracle_config struct {
@@ -51,43 +52,54 @@ type ComputeApi struct {
 }
 
 type Image struct {
+	BaseImageId            string
+	CompartmentId          string
+	CreateImageAllowed     string
+	DisplayName            string
+	Id                     string
+	LifeCycleState         string
+	OperatingSystemVersion string
+	TimeCreated            time.Time
 }
 
 type instancesList []Instance
 
 type Instance struct {
-	availabilityDomain string
-	compartmentId      string
-	displayName        string
-	id                 string
-	imageId            string
-	lifecycleState     string
-	metadata           string
-	region             string
-	shape              string
-	timeCreated        string
+	AvailabilityDomain string
+	CompartmentId      string
+	DisplayName        string
+	Id                 string
+	ImageId            string
+	LifecycleState     string
+	Metadata           map[string]string
+	Region             string
+	Shape              string
+	TimeCreated        time.Time
 }
 
-func (computeApi *ComputeApi) GetInstance(instanceId string) {
+func (computeApi *ComputeApi) GetInstance(instanceId string) (*Instance, error) {
 	suffix := fmt.Sprintf("/instances/%s", instanceId)
+
 	req, err := http.NewRequest("GET", computeApi.Config.core_endpoint+suffix, nil)
+	if err != nil {
+		return nil, err
+	}
 	inject_headers(computeApi.Config, req)
+
 	client := &http.Client{}
 	resp, err := client.Do(req)
-	var isL Instance
 	decoder := json.NewDecoder(resp.Body)
-	err = decoder.Decode(&isL)
-	fmt.Println("(((((((((((((")
-	out, err := ioutil.ReadAll(resp.Body)
-	fmt.Println(string(out))
-	fmt.Println(isL)
-	fmt.Println(err)
-	fmt.Println("(((((((((((((")
+	var instance Instance
+	err = decoder.Decode(&instance)
+	return &instance, nil
 }
 
-func (computeApi *ComputeApi) ListImages(compartment_id string) {
+func (computeApi *ComputeApi) ListImages(compartment_id string) (*[]*Image, error) {
 	suffix := "/images"
 	req, err := http.NewRequest("GET", computeApi.Config.core_endpoint+suffix, nil)
+	if err != nil {
+		return nil, err
+	}
 	url := req.URL
 	q := url.Query()
 	q.Set("compartmentId", compartment_id)
@@ -97,9 +109,12 @@ func (computeApi *ComputeApi) ListImages(compartment_id string) {
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
-	output, err := ioutil.ReadAll(resp.Body)
-	fmt.Println(string(output[:]))
-	fmt.Println(err)
+
+	decoder := json.NewDecoder(resp.Body)
+	var images []Instance
+	err = decoder.Decode(&images)
+
+	return images, nil
 }
 
 func inject_headers(oracleConfig *oracle_config, request *http.Request) {
