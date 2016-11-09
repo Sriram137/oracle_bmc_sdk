@@ -8,6 +8,8 @@ import (
 	"io/ioutil"
 	"net/http"
 	"time"
+	"io"
+	"bytes"
 )
 
 type oracle_config struct {
@@ -71,51 +73,90 @@ type Instance struct {
 	Id                 string
 	ImageId            string
 	LifecycleState     string
-	Metadata           map[string]string
 	Region             string
 	Shape              string
 	TimeCreated        time.Time
+	Metadata           map[string]string
+}
+
+type oracleRequest struct {
+	Url          string
+	Suffix       string
+	Method       string
+	OracleConfig *oracle_config
+	Output       interface{}
+	Params       map[string]string
+}
+
+func (orReq *oracleRequest) doReq() (interface{}, error) {
+	var body io.Reader
+	if orReq.Params != nil && len(orReq.Params) > 0 {
+		val, err := json.Marshal(orReq.Params)
+		if err != nil {
+			return nil, err
+		}
+		body = bytes.NewBuffer(val)
+	} else {
+		body = nil
+	}
+	req, err := http.NewRequest(orReq.Method, orReq.Url + orReq.Suffix, body)
+	if body == nil {
+		url := req.URL
+		q := url.Query()
+		for key, val := range orReq.Params {
+			q.Set(key, val)
+		}
+		url.RawQuery = q.Encode()
+
+	}
+	if err != nil {
+		return nil, err
+	}
+	inject_headers(orReq.OracleConfig, req)
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	decoder := json.NewDecoder(resp.Body)
+	err = decoder.Decode(orReq.Output)
+	return orReq.Output, nil
 }
 
 func (computeApi *ComputeApi) GetInstance(instanceId string) (*Instance, error) {
 	suffix := fmt.Sprintf("/instances/%s", instanceId)
-
-	req, err := http.NewRequest("GET", computeApi.Config.core_endpoint+suffix, nil)
-	if err != nil {
-		return nil, err
-	}
-	inject_headers(computeApi.Config, req)
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	decoder := json.NewDecoder(resp.Body)
 	var instance Instance
-	err = decoder.Decode(&instance)
-	return &instance, nil
-}
-
-func (computeApi *ComputeApi) ListImages(compartment_id string) (*[]*Image, error) {
-	suffix := "/images"
-	req, err := http.NewRequest("GET", computeApi.Config.core_endpoint+suffix, nil)
+	output := &instance
+	orReq := oracleRequest{Url: computeApi.Config.core_endpoint, Suffix: suffix, Method: "GET", OracleConfig: computeApi.Config, Params: nil, Output:output}
+	body, err := orReq.doReq()
 	if err != nil {
 		return nil, err
 	}
-	url := req.URL
-	q := url.Query()
-	q.Set("compartmentId", compartment_id)
-	url.RawQuery = q.Encode()
-
-	inject_headers(computeApi.Config, req)
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
-
-	decoder := json.NewDecoder(resp.Body)
-	var images []Instance
-	err = decoder.Decode(&images)
-
-	return images, nil
+	return (body.(*Instance)), nil
 }
+
+//func (computeApi *ComputeApi) ListImages(compartment_id string) (*[]*Image, error) {
+//	suffix := "/images"
+//	req, err := http.NewRequest("GET", computeApi.Config.core_endpoint + suffix, nil)
+//	if err != nil {
+//		return nil, err
+//	}
+//	url := req.URL
+//	q := url.Query()
+//	q.Set("compartmentId", compartment_id)
+//	url.RawQuery = q.Encode()
+//
+//	inject_headers(computeApi.Config, req)
+//
+//	client := &http.Client{}
+//	resp, err := client.Do(req)
+//
+//	decoder := json.NewDecoder(resp.Body)
+//	var images []*Instance
+//	err = decoder.Decode(&images)
+//
+//	return *images, nil
+//}
 
 func inject_headers(oracleConfig *oracle_config, request *http.Request) {
 	var required_headers []string
