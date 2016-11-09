@@ -1,15 +1,15 @@
 package oraclebmc_sdk
 
 import (
+	"bytes"
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
 	"github.com/99designs/httpsignatures-go"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"time"
-	"io"
-	"bytes"
 )
 
 type oracle_config struct {
@@ -99,7 +99,7 @@ func (orReq *oracleRequest) doReq() (interface{}, error) {
 	} else {
 		body = nil
 	}
-	req, err := http.NewRequest(orReq.Method, orReq.Url + orReq.Suffix, body)
+	req, err := http.NewRequest(orReq.Method, orReq.Url+orReq.Suffix, body)
 	if body == nil {
 		url := req.URL
 		q := url.Query()
@@ -127,7 +127,7 @@ func (computeApi *ComputeApi) GetInstance(instanceId string) (*Instance, error) 
 	suffix := fmt.Sprintf("/instances/%s", instanceId)
 	var instance Instance
 	output := &instance
-	orReq := oracleRequest{Url: computeApi.Config.core_endpoint, Suffix: suffix, Method: "GET", OracleConfig: computeApi.Config, Params: nil, Output:output}
+	orReq := oracleRequest{Url: computeApi.Config.core_endpoint, Suffix: suffix, Method: "GET", OracleConfig: computeApi.Config, Params: nil, Output: output}
 	body, err := orReq.doReq()
 	if err != nil {
 		return nil, err
@@ -135,28 +135,20 @@ func (computeApi *ComputeApi) GetInstance(instanceId string) (*Instance, error) 
 	return (body.(*Instance)), nil
 }
 
-//func (computeApi *ComputeApi) ListImages(compartment_id string) (*[]*Image, error) {
-//	suffix := "/images"
-//	req, err := http.NewRequest("GET", computeApi.Config.core_endpoint + suffix, nil)
-//	if err != nil {
-//		return nil, err
-//	}
-//	url := req.URL
-//	q := url.Query()
-//	q.Set("compartmentId", compartment_id)
-//	url.RawQuery = q.Encode()
-//
-//	inject_headers(computeApi.Config, req)
-//
-//	client := &http.Client{}
-//	resp, err := client.Do(req)
-//
-//	decoder := json.NewDecoder(resp.Body)
-//	var images []*Instance
-//	err = decoder.Decode(&images)
-//
-//	return *images, nil
-//}
+func (computeApi *ComputeApi) ListImages(compartment_id string) (*[]*Image, error) {
+	suffix := "/images"
+	var images []*Image
+	output := &images
+	params := make(map[string]string)
+	params["compartmentId"] = compartment_id
+	orReq := oracleRequest{Url: computeApi.Config.core_endpoint, Suffix: suffix, Method: "GET", OracleConfig: computeApi.Config, Params: nil, Output: output}
+
+	_, err := orReq.doReq()
+	if err != nil {
+		return nil, err
+	}
+	return images, nil
+}
 
 func inject_headers(oracleConfig *oracle_config, request *http.Request) {
 	var required_headers []string
