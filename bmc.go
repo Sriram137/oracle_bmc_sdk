@@ -9,7 +9,6 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
-	"time"
 )
 
 type oracle_config struct {
@@ -53,47 +52,21 @@ type ComputeApi struct {
 	Config *oracle_config
 }
 
-type Image struct {
-	BaseImageId            string
-	CompartmentId          string
-	CreateImageAllowed     string
-	DisplayName            string
-	Id                     string
-	LifeCycleState         string
-	OperatingSystemVersion string
-	TimeCreated            time.Time
-}
-
-type instancesList []Instance
-
-type Instance struct {
-	AvailabilityDomain string
-	CompartmentId      string
-	DisplayName        string
-	Id                 string
-	ImageId            string
-	LifecycleState     string
-	Region             string
-	Shape              string
-	TimeCreated        time.Time
-	Metadata           map[string]string
-}
-
 type oracleRequest struct {
 	Url          string
 	Suffix       string
 	Method       string
-	OracleConfig *oracle_config
 	Output       interface{}
+	OracleConfig *oracle_config
 	Params       map[string]string
 }
 
-func (orReq *oracleRequest) doReq() (interface{}, error) {
+func (orReq *oracleRequest) doReq() error {
 	var body io.Reader
 	if orReq.Params != nil && len(orReq.Params) > 0 {
 		val, err := json.Marshal(orReq.Params)
 		if err != nil {
-			return nil, err
+			return err
 		}
 		body = bytes.NewBuffer(val)
 	} else {
@@ -110,44 +83,61 @@ func (orReq *oracleRequest) doReq() (interface{}, error) {
 
 	}
 	if err != nil {
-		return nil, err
+		return err
 	}
 	inject_headers(orReq.OracleConfig, req)
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	decoder := json.NewDecoder(resp.Body)
 	err = decoder.Decode(orReq.Output)
-	return orReq.Output, nil
+	return nil
 }
 
 func (computeApi *ComputeApi) GetInstance(instanceId string) (*Instance, error) {
 	suffix := fmt.Sprintf("/instances/%s", instanceId)
+
 	var instance Instance
 	output := &instance
-	orReq := oracleRequest{Url: computeApi.Config.core_endpoint, Suffix: suffix, Method: "GET", OracleConfig: computeApi.Config, Params: nil, Output: output}
-	body, err := orReq.doReq()
+	orReq := oracleRequest{
+		Url:          computeApi.Config.core_endpoint,
+		Suffix:       suffix,
+		Method:       "GET",
+		OracleConfig: computeApi.Config,
+		Params:       nil,
+		Output:       output}
+	err := orReq.doReq()
 	if err != nil {
 		return nil, err
 	}
-	return (body.(*Instance)), nil
+	return output, nil
 }
 
 func (computeApi *ComputeApi) ListImages(compartment_id string) (*[]*Image, error) {
 	suffix := "/images"
+
 	var images []*Image
 	output := &images
+
 	params := make(map[string]string)
 	params["compartmentId"] = compartment_id
-	orReq := oracleRequest{Url: computeApi.Config.core_endpoint, Suffix: suffix, Method: "GET", OracleConfig: computeApi.Config, Params: nil, Output: output}
 
-	_, err := orReq.doReq()
+	orReq := oracleRequest{
+		Url:          computeApi.Config.core_endpoint,
+		Suffix:       suffix,
+		Method:       "GET",
+		OracleConfig: computeApi.Config,
+		Params:       nil,
+		Output:       output}
+
+	err := orReq.doReq()
+
 	if err != nil {
 		return nil, err
 	}
-	return images, nil
+	return output, nil
 }
 
 func inject_headers(oracleConfig *oracle_config, request *http.Request) {
