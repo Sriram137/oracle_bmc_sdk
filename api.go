@@ -23,8 +23,7 @@ type oracleRequest struct {
 }
 
 func (orReq *oracleRequest) doReq() error {
-	//orReq.Body = bytes.NewBufferString(`{"displayName": "qbol-acc99-cl410-master-1", "metadata": {}, "availabilityDomain": "ncSu:PHX-AD-1", "shape": "BM.DenseIO1.36", "compartmentId": "ocid1.compartment.oc1..aaaaaaaa754zm7nutveaoklas34rorcznxvshimdnrwekqgx5dc6wk5b5tgq", "subnetId": "ocid1.subnet.oc1.phx.aaaaaaaaxkefohaf242whnerssetx2lis5g5paikorm4xb4zr4cxt2m6iiaq", "imageId": "ocid1.image.oc1.phx.aaaaaaaapkuvkljm6ku254ykuaufb36hyz7oqohvryjq4dhiodrhfi5ve6xq"}`)
-	req, err := http.NewRequest(orReq.Method, orReq.Url+orReq.Suffix, orReq.Body)
+	req, err := http.NewRequest(orReq.Method, orReq.Url + orReq.Suffix, orReq.Body)
 	if err != nil {
 		return err
 	}
