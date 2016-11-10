@@ -1,6 +1,9 @@
 package oraclebmc_sdk
 
 import (
+	"bytes"
+	"encoding/json"
+	"io"
 	"time"
 )
 
@@ -33,9 +36,14 @@ type LaunchInstanceInput struct {
 	CompartmentId      string
 	DisplayName        string
 	ImageId            string
+	Shape              string
+	SubnetId           string
 	Metadata           map[string]string
-	Shape              map[string]string
-	SubnetId           map[string]string
+}
+
+func (launchInstanceInput *LaunchInstanceInput) asJSON() (io.Reader) {
+	body, _ := json.Marshal(launchInstanceInput)
+	return bytes.NewBuffer(body)
 }
 
 type oracle_config struct {

@@ -1,6 +1,8 @@
 package oraclebmc_sdk
 
-import "fmt"
+import (
+	"fmt"
+)
 
 func NewConfig(user string, tenancy string, fingerprint string, signing_key string) *oracle_config {
 	core_endpoint := "https://iaas.us-phoenix-1.oraclecloud.com/20160918"
@@ -73,7 +75,7 @@ func (computeApi *ComputeApi) ListImages(compartment_id string) (*[]*Image, erro
 	return output, nil
 }
 
-func (computeApi *ComputeApi) CreateInstance(launchInstanceInput *LaunchInstanceInput) (Instance, error) {
+func (computeApi *ComputeApi) CreateInstance(launchInstanceInput *LaunchInstanceInput) (*Instance, error) {
 	suffix := "/instances"
 	var instance Instance
 	output := &instance
@@ -82,7 +84,7 @@ func (computeApi *ComputeApi) CreateInstance(launchInstanceInput *LaunchInstance
 		Suffix:       suffix,
 		Method:       "POST",
 		OracleConfig: computeApi.Config,
-		Body:         launchInstanceInput,
+		Body:         launchInstanceInput.asJSON(),
 		QueryParams:  nil,
 		Output:       output}
 
