@@ -76,7 +76,7 @@ func (computeApi *ComputeApi) ListImages(compartment_id string) (*[]*Image, erro
 }
 
 func (computeApi *ComputeApi) CreateInstance(launchInstanceInput *LaunchInstanceInput) (*Instance, error) {
-	suffix := "/instances"
+	suffix := "/instances/"
 	var instance Instance
 	output := &instance
 	orReq := oracleRequest{

@@ -32,16 +32,16 @@ type Instance struct {
 }
 
 type LaunchInstanceInput struct {
-	AvailabilityDomain string
-	CompartmentId      string
-	DisplayName        string
-	ImageId            string
-	Shape              string
-	SubnetId           string
-	Metadata           map[string]string
+	AvailabilityDomain string            `json:"availabilityDomain"`
+	CompartmentId      string            `json:"compartmentId"`
+	DisplayName        string            `json:"displayName"`
+	ImageId            string            `json:"imageId"`
+	Shape              string            `json:"shape"`
+	SubnetId           string            `json:"subnetId"`
+	Metadata           map[string]string `json:"metadata"`
 }
 
-func (launchInstanceInput *LaunchInstanceInput) asJSON() (io.Reader) {
+func (launchInstanceInput *LaunchInstanceInput) asJSON() io.Reader {
 	body, _ := json.Marshal(launchInstanceInput)
 	return bytes.NewBuffer(body)
 }
