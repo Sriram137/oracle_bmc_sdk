@@ -25,6 +25,10 @@ func (createImageInput *CreateImageInput) asJSON() io.Reader {
 	return bytes.NewBuffer(body)
 }
 
+func (image *Image) getId() string {
+	return image.Id
+}
+
 func (image *Image) endpoint() string {
 	return "images"
 }

@@ -35,6 +35,10 @@ func (instance *Instance) endpoint() string {
 	return "instances"
 }
 
+func (instance *Instance) getId() string {
+	return instance.Id
+}
+
 func (instance *Instance) validStates() []string {
 	return []string{
 		"PROVISIONING",

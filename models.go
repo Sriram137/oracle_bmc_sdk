@@ -11,7 +11,9 @@ type ResourceInput interface {
 }
 
 type Resourceable interface {
+	getId() string
 	endpoint() string
+	validStates() []string
 }
 type oracle_config struct {
 	user                         string
