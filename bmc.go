@@ -20,7 +20,7 @@ func (ComputeApi *ComputeApi) RefreshImage(image *Image) error {
 	return ComputeApi.refresh(image)
 }
 
-func (computeApi *ComputeApi) CreateImage(createImageInput *CreateImageInput) (*Instance, error) {
+func (computeApi *ComputeApi) CreateImage(createImageInput *CreateImageInput) (*Image, error) {
 	var image Image
 	output := &image
 	err := computeApi.createResource(createImageInput, output)

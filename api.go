@@ -42,9 +42,11 @@ func (orReq *oracleRequest) doReq() error {
 	if err != nil {
 		return err
 	}
+	debug_response, _ := ioutil.ReadAll(resp.Body)
+	resp.Body = ioutil.NopCloser(bytes.NewBuffer(debug_response))
 	decoder := json.NewDecoder(resp.Body)
 	err = decoder.Decode(orReq.Output)
-	return nil
+	return err
 }
 
 func (orReq *oracleRequest) inject_headers(request *http.Request) {

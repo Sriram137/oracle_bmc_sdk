@@ -4,10 +4,14 @@ import (
 	"bytes"
 	"encoding/json"
 	"io"
+	"time"
 )
 
 type Instance struct {
-	OracleResource
+	Id                 string
+	LifecycleState     string
+	DisplayName        string
+	TimeCreated        time.Time
 	AvailabilityDomain string
 	CompartmentId      string
 	ImageId            string
@@ -37,6 +41,9 @@ func (instance *Instance) endpoint() string {
 
 func (instance *Instance) getId() string {
 	return instance.Id
+}
+func (instance *Instance) getState() string {
+	return instance.LifecycleState
 }
 
 func (instance *Instance) validStates() []string {

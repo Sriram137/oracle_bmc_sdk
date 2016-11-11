@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"io"
+	"time"
 )
 
 type CreateImageInput struct {
@@ -13,7 +14,10 @@ type CreateImageInput struct {
 }
 
 type Image struct {
-	OracleResource
+	Id                     string
+	LifecycleState         string
+	DisplayName            string
+	TimeCreated            time.Time
 	BaseImageId            string
 	CompartmentId          string
 	CreateImageAllowed     string
@@ -27,6 +31,9 @@ func (createImageInput *CreateImageInput) asJSON() io.Reader {
 
 func (image *Image) getId() string {
 	return image.Id
+}
+func (image *Image) getState() string {
+	return image.LifecycleState
 }
 
 func (image *Image) endpoint() string {

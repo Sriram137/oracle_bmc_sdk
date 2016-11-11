@@ -18,18 +18,24 @@ func (ComputeApi *ComputeApi) waitForState(resourceable Resourceable, state stri
 			break
 		}
 	}
+	if err != nil {
+		return err
+	}
 
 	interval := time.Duration(60)
 	retries := 10
 	for ; retries > 0; retries-- {
 		ComputeApi.refresh(resourceable)
-		time.Sleep(interval)
+		if resourceable.getState() == state {
+			return nil
+		}
+		time.Sleep(interval * time.Second)
 
 	}
-	return err
+	return errors.New("Time Out expired")
 }
 func (computeApi *ComputeApi) get(id string, resourceable Resourceable) error {
-	suffix := fmt.Sprintf("/%s/%s", resourceable.endpoint(), id)
+	suffix := fmt.Sprintf("%s/%s", resourceable.endpoint(), id)
 
 	orReq := oracleRequest{
 		Url:          computeApi.Config.core_endpoint,
@@ -48,8 +54,6 @@ func (computeApi *ComputeApi) get(id string, resourceable Resourceable) error {
 
 func (computeApi *ComputeApi) createResource(resourceInput ResourceInput, resourceable Resourceable) error {
 	suffix := resourceable.endpoint()
-	var instance Instance
-	output := &instance
 	orReq := oracleRequest{
 		Url:          computeApi.Config.core_endpoint,
 		Suffix:       suffix,
@@ -57,11 +61,11 @@ func (computeApi *ComputeApi) createResource(resourceInput ResourceInput, resour
 		OracleConfig: computeApi.Config,
 		Body:         resourceInput.asJSON(),
 		QueryParams:  nil,
-		Output:       output}
+		Output:       resourceable}
 
 	err := orReq.doReq()
 	if err != nil {
-		return nil, err
+		return err
 	}
 	return nil
 }
