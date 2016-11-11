@@ -4,36 +4,13 @@ import (
 	"fmt"
 )
 
-func NewConfig(user string, tenancy string, fingerprint string, signing_key string) *oracle_config {
-	core_endpoint := "https://iaas.us-phoenix-1.oraclecloud.com/20160918"
-	obj_endpoint := "https://objectstorage.us-phoenix-1.oraclecloud.com"
-	endpoint_identity_api := "https://identity.us-phoenix-1.oraclecloud.com/20160918"
-	return &oracle_config{
-		user:                         user,
-		tenancy:                      tenancy,
-		fingerprint:                  fingerprint,
-		private_key:                  signing_key,
-		core_endpoint:                core_endpoint,
-		endpoint_blockstorage_api:    core_endpoint,
-		endpoint_compute_api:         core_endpoint,
-		endpoint_virtual_network_api: core_endpoint,
-		endpoint_object_storage_api:  obj_endpoint,
-		endpoint_identity_api:        endpoint_identity_api}
-}
-
-func (config *oracle_config) getKey() string {
-	return fmt.Sprintf("%s/%s/%s", config.tenancy, config.user, config.fingerprint)
-}
-
 type ComputeApi struct {
 	Config *oracle_config
 }
 
-func (computeApi *ComputeApi) GetInstance(instanceId string) (*Instance, error) {
-	suffix := fmt.Sprintf("/instances/%s", instanceId)
+func (computeApi *ComputeApi) get(id string, resourceable Resourceable) error {
+	suffix := fmt.Sprintf("/%s/%s", resourceable.endpoint(), id)
 
-	var instance Instance
-	output := &instance
 	orReq := oracleRequest{
 		Url:          computeApi.Config.core_endpoint,
 		Suffix:       suffix,
@@ -41,8 +18,48 @@ func (computeApi *ComputeApi) GetInstance(instanceId string) (*Instance, error) 
 		OracleConfig: computeApi.Config,
 		Body:         nil,
 		QueryParams:  nil,
-		Output:       output}
+		Output:       resourceable}
 	err := orReq.doReq()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (computeApi *ComputeApi) createResource(resourceInput ResourceInput, resourceable Resourceable) error {
+	suffix := resourceable.endpoint()
+	var instance Instance
+	output := &instance
+	orReq := oracleRequest{
+		Url:          computeApi.Config.core_endpoint,
+		Suffix:       suffix,
+		Method:       "POST",
+		OracleConfig: computeApi.Config,
+		Body:         resourceInput.asJSON(),
+		QueryParams:  nil,
+		Output:       output}
+
+	err := orReq.doReq()
+	if err != nil {
+		return nil, err
+	}
+	return nil
+}
+
+func (computeApi *ComputeApi) GetImage(imageId string) (*Image, error) {
+	var image Image
+	output := &image
+	err := computeApi.get(imageId, output)
+	if err != nil {
+		return nil, err
+	}
+	return output, nil
+}
+
+func (computeApi *ComputeApi) GetInstance(instanceId string) (*Instance, error) {
+	var instance Instance
+	output := &instance
+	err := computeApi.get(instanceId, output)
 	if err != nil {
 		return nil, err
 	}
@@ -75,20 +92,20 @@ func (computeApi *ComputeApi) ListImages(compartment_id string) (*[]*Image, erro
 	return output, nil
 }
 
+func (computeApi *ComputeApi) CreateImage(createImageInput *CreateImageInput) (*Instance, error) {
+	var image Image
+	output := &image
+	err := computeApi.createResource(createImageInput, output)
+	if err != nil {
+		return nil, err
+	}
+	return output, nil
+}
+
 func (computeApi *ComputeApi) CreateInstance(launchInstanceInput *LaunchInstanceInput) (*Instance, error) {
-	suffix := "/instances/"
 	var instance Instance
 	output := &instance
-	orReq := oracleRequest{
-		Url:          computeApi.Config.core_endpoint,
-		Suffix:       suffix,
-		Method:       "POST",
-		OracleConfig: computeApi.Config,
-		Body:         launchInstanceInput.asJSON(),
-		QueryParams:  nil,
-		Output:       output}
-
-	err := orReq.doReq()
+	err := computeApi.createResource(launchInstanceInput, output)
 	if err != nil {
 		return nil, err
 	}

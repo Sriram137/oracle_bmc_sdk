@@ -23,7 +23,7 @@ type oracleRequest struct {
 }
 
 func (orReq *oracleRequest) doReq() error {
-	req, err := http.NewRequest(orReq.Method, orReq.Url + orReq.Suffix, orReq.Body)
+	req, err := http.NewRequest(orReq.Method, orReq.Url+orReq.Suffix, orReq.Body)
 	if err != nil {
 		return err
 	}
