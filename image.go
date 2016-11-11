@@ -14,14 +14,15 @@ type CreateImageInput struct {
 }
 
 type Image struct {
-	Id                     string
-	LifecycleState         string
-	DisplayName            string
-	TimeCreated            time.Time
 	BaseImageId            string
 	CompartmentId          string
-	CreateImageAllowed     string
+	CreateImageAllowed     bool
+	DisplayName            string
+	Id                     string
+	LifecycleState         string
+	operatingSystem        string
 	OperatingSystemVersion string
+	TimeCreated            time.Time
 }
 
 func (createImageInput *CreateImageInput) asJSON() io.Reader {
