@@ -37,6 +37,10 @@ func (image *Image) getState() string {
 	return image.LifecycleState
 }
 
+func (image *Image) retryCount() int {
+	return 50
+}
+
 func (image *Image) endpoint() string {
 	return "images"
 }

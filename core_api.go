@@ -23,7 +23,7 @@ func (ComputeApi *ComputeApi) waitForState(resourceable Resourceable, state stri
 	}
 
 	interval := time.Duration(60)
-	retries := 10
+	retries := resourceable.retryCount()
 	for ; retries > 0; retries-- {
 		ComputeApi.refresh(resourceable)
 		if resourceable.getState() == state {
@@ -62,6 +62,24 @@ func (computeApi *ComputeApi) createResource(resourceInput ResourceInput, resour
 		Body:         resourceInput.asJSON(),
 		QueryParams:  nil,
 		Output:       resourceable}
+
+	err := orReq.doReq()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (computeApi *ComputeApi) deleteResource(resourceable Resourceable) error {
+	suffix := fmt.Sprintf("%s/%s", resourceable.endpoint(), resourceable.getId())
+	orReq := oracleRequest{
+		Url:          computeApi.Config.core_endpoint,
+		Suffix:       suffix,
+		Method:       "DELETE",
+		OracleConfig: computeApi.Config,
+		Body:         nil,
+		QueryParams:  nil,
+		Output:       nil}
 
 	err := orReq.doReq()
 	if err != nil {

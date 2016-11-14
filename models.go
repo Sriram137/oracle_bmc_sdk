@@ -11,6 +11,7 @@ type ResourceInput interface {
 
 type Resourceable interface {
 	getId() string
+	retryCount() int
 	getState() string
 	endpoint() string
 	validStates() []string

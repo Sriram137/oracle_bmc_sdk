@@ -46,6 +46,10 @@ func (instance *Instance) getState() string {
 	return instance.LifecycleState
 }
 
+func (instance *Instance) retryCount() int {
+	return 15
+}
+
 func (instance *Instance) validStates() []string {
 	return []string{
 		"PROVISIONING",

@@ -12,6 +12,10 @@ func (ComputeApi *ComputeApi) RefreshInstance(instance *Instance) error {
 	return ComputeApi.refresh(instance)
 }
 
+func (ComputeApi *ComputeApi) TerminateInstance(instance *Instance) error {
+	return ComputeApi.deleteResource(instance)
+}
+
 func (ComputeApi *ComputeApi) WaitForImage(image *Image, state string) error {
 	return ComputeApi.waitForState(image, state)
 }

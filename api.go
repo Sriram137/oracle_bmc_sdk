@@ -23,7 +23,7 @@ type oracleRequest struct {
 }
 
 func (orReq *oracleRequest) doReq() error {
-	req, err := http.NewRequest(orReq.Method, orReq.Url+orReq.Suffix, orReq.Body)
+	req, err := http.NewRequest(orReq.Method, orReq.Url + orReq.Suffix, orReq.Body)
 	if err != nil {
 		return err
 	}
@@ -42,10 +42,12 @@ func (orReq *oracleRequest) doReq() error {
 	if err != nil {
 		return err
 	}
-	debug_response, _ := ioutil.ReadAll(resp.Body)
-	resp.Body = ioutil.NopCloser(bytes.NewBuffer(debug_response))
-	decoder := json.NewDecoder(resp.Body)
-	err = decoder.Decode(orReq.Output)
+	if resp.Body != nil {
+		debug_response, _ := ioutil.ReadAll(resp.Body)
+		resp.Body = ioutil.NopCloser(bytes.NewBuffer(debug_response))
+		decoder := json.NewDecoder(resp.Body)
+		err = decoder.Decode(orReq.Output)
+	}
 	return err
 }
 
