@@ -1,7 +1,7 @@
 package oraclebmc_sdk
 
 type ComputeApi struct {
-	Config *oracle_config
+	Config *OracleConfig
 }
 
 func (ComputeApi *ComputeApi) WaitForInstance(instance *Instance, state string) error {

@@ -16,7 +16,7 @@ type Resourceable interface {
 	endpoint() string
 	validStates() []string
 }
-type oracle_config struct {
+type OracleConfig struct {
 	user                         string
 	tenancy                      string
 	fingerprint                  string
@@ -32,11 +32,11 @@ type oracle_config struct {
 	additional_user_agent        string
 }
 
-func NewConfig(user string, tenancy string, fingerprint string, signing_key string) *oracle_config {
+func NewConfig(user string, tenancy string, fingerprint string, signing_key string) *OracleConfig {
 	core_endpoint := "https://iaas.us-phoenix-1.oraclecloud.com/20160918/"
 	obj_endpoint := "https://objectstorage.us-phoenix-1.oraclecloud.com/"
 	endpoint_identity_api := "https://identity.us-phoenix-1.oraclecloud.com/20160918/"
-	return &oracle_config{
+	return &OracleConfig{
 		user:                         user,
 		tenancy:                      tenancy,
 		fingerprint:                  fingerprint,
@@ -49,6 +49,6 @@ func NewConfig(user string, tenancy string, fingerprint string, signing_key stri
 		endpoint_identity_api:        endpoint_identity_api}
 }
 
-func (config *oracle_config) getKey() string {
+func (config *OracleConfig) getKey() string {
 	return fmt.Sprintf("%s/%s/%s", config.tenancy, config.user, config.fingerprint)
 }

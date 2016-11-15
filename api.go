@@ -18,7 +18,7 @@ type oracleRequest struct {
 	Method       string
 	Body         io.Reader
 	Output       interface{}
-	OracleConfig *oracle_config
+	OracleConfig *OracleConfig
 	QueryParams  map[string]string
 }
 
