@@ -35,6 +35,10 @@ func (ComputeApi *ComputeApi) waitForState(resourceable Resourceable, state stri
 	return errors.New("Time Out expired")
 }
 func (computeApi *ComputeApi) get(id string, resourceable Resourceable) error {
+	if id == "" {
+		err := errors.New("Id cannot be empty")
+		return err
+	}
 	suffix := fmt.Sprintf("%s/%s", resourceable.endpoint(), id)
 
 	orReq := oracleRequest{
