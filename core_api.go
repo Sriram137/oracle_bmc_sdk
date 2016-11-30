@@ -93,7 +93,7 @@ func (computeApi *ComputeApi) deleteResource(resourceable Resourceable) error {
 }
 
 func (computeApi *ComputeApi) ListVnicAttachments(compartment_id string, instanceId string) (*[]*VnicAttachment, error) {
-	suffix := "/vnicAttachments"
+	suffix := "vnicAttachments"
 
 	var vnicAttachments []*VnicAttachment
 	output := &vnicAttachments
@@ -120,7 +120,7 @@ func (computeApi *ComputeApi) ListVnicAttachments(compartment_id string, instanc
 }
 
 func (computeApi *ComputeApi) ListImages(compartment_id string) (*[]*Image, error) {
-	suffix := "/images"
+	suffix := "images"
 
 	var images []*Image
 	output := &images

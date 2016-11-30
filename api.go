@@ -36,7 +36,6 @@ func (orReq *oracleRequest) doReq() error {
 			q.Set(key, val)
 		}
 		url.RawQuery = q.Encode()
-
 	}
 	orReq.inject_headers(req)
 	client := &http.Client{}
