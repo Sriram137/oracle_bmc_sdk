@@ -92,6 +92,33 @@ func (computeApi *ComputeApi) deleteResource(resourceable Resourceable) error {
 	return nil
 }
 
+func (computeApi *ComputeApi) ListVnicAttachments(compartment_id string, instanceId string) (*[]*VnicAttachment, error) {
+	suffix := "/vnicAttachments"
+
+	var vnicAttachments []*VnicAttachment
+	output := &vnicAttachments
+
+	params := make(map[string]string)
+	params["compartmentId"] = compartment_id
+	params["instanceId"] = instanceId
+
+	orReq := oracleRequest{
+		Url:          computeApi.Config.core_endpoint,
+		Suffix:       suffix,
+		Method:       "GET",
+		OracleConfig: computeApi.Config,
+		QueryParams:  params,
+		Body:         nil,
+		Output:       output}
+
+	err := orReq.doReq()
+
+	if err != nil {
+		return nil, err
+	}
+	return output, nil
+}
+
 func (computeApi *ComputeApi) ListImages(compartment_id string) (*[]*Image, error) {
 	suffix := "/images"
 

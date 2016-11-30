@@ -5,9 +5,11 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"github.com/99designs/httpsignatures-go"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"strconv"
 )
@@ -42,9 +44,17 @@ func (orReq *oracleRequest) doReq() error {
 	if err != nil {
 		return err
 	}
+	if resp.StatusCode != 200 {
+		debug_response, _ := ioutil.ReadAll(resp.Body)
+		resp.Body = ioutil.NopCloser(bytes.NewBuffer(debug_response))
+		log.Println(req.Header)
+		log.Println(string(debug_response))
+		return errors.New(string(debug_response))
+	}
 	if resp.Body != nil {
 		debug_response, _ := ioutil.ReadAll(resp.Body)
 		resp.Body = ioutil.NopCloser(bytes.NewBuffer(debug_response))
+		log.Println(string(debug_response))
 		decoder := json.NewDecoder(resp.Body)
 		err = decoder.Decode(orReq.Output)
 	}
