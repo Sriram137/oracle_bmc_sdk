@@ -65,8 +65,8 @@ func (computeApi *ComputeApi) GetInstance(instanceId string) (*Instance, error) 
 }
 
 func (computeApi *ComputeApi) GetVnic(id string) (*Vnic, error) {
-	var vnic  *Vnic
-	output := vnic
+	var vnic  Vnic
+	output := &vnic
 	err := computeApi.get(id, output)
 	if err != nil {
 		return nil, err
