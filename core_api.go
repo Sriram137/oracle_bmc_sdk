@@ -22,7 +22,7 @@ func (ComputeApi *ComputeApi) waitForState(resourceable Resourceable, state stri
 		return err
 	}
 
-	interval := time.Duration(60)
+	interval := time.Duration(180)
 	retries := resourceable.retryCount()
 	for ; retries > 0; retries-- {
 		ComputeApi.refresh(resourceable)
